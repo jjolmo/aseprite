@@ -9,10 +9,10 @@
 #define APP_HANDLE_ANIDIR_H_INCLUDED
 #pragma once
 
-#include "app/pref/preferences.h"
 #include "doc/frame.h"
 
 namespace doc {
+  class FrameTag;
   class Sprite;
 }
 
@@ -21,7 +21,7 @@ namespace app {
   doc::frame_t calculate_next_frame(
     doc::Sprite* sprite,
     doc::frame_t frame,
-    DocumentPreferences& docPref,
+    doc::FrameTag* tag,
     bool& pingPongForward);
 
 } // namespace app
