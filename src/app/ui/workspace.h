@@ -9,31 +9,24 @@
 #define APP_UI_WORKSPACE_H_INCLUDED
 #pragma once
 
-#include "app/ui/animated_widget.h"
-#include "app/ui/workspace_views.h"
+#include "app/ui/workspace_panel.h"
 #include "base/signal.h"
 #include "ui/widget.h"
-
-#include <map>
-#include <vector>
 
 namespace app {
   class Tabs;
 
-  class Workspace : public ui::Widget
-                  , public AnimatedWidget {
-    enum Ani : int {
-      ANI_NONE,
-      ANI_DROPAREA,
-    };
-
+  class Workspace : public ui::Widget {
   public:
     typedef WorkspaceViews::iterator iterator;
+
+    static ui::WidgetType Type();
 
     Workspace();
     ~Workspace();
 
-    void setTabsBar(Tabs* tabsBar);
+    void setTabsBar(Tabs* tabs);
+
     iterator begin() { return m_views.begin(); }
     iterator end() { return m_views.end(); }
 
@@ -46,31 +39,33 @@ namespace app {
 
     WorkspaceView* activeView();
     void setActiveView(WorkspaceView* view);
+    void setMainPanelAsActive();
 
     // Drop views into workspace
     void setDropViewPreview(const gfx::Point& pos);
-    void removeDropViewPreview(const gfx::Point& pos);
-    void dropViewAt(const gfx::Point& pos, WorkspaceView* view);
+    void removeDropViewPreview();
+
+    // Returns true if the view was docked inside the workspace.
+    bool dropViewAt(const gfx::Point& pos, WorkspaceView* view);
 
     Signal0<void> ActiveViewChanged;
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
-    void onAnimationFrame() override;
-    void onAnimationStop() override;
 
   private:
     int calculateDropArea(const gfx::Point& pos) const;
     int getDropThreshold() const;
     void adjustTime(int& time, int flag);
+    WorkspacePanel* getViewPanel(WorkspaceView* view);
+    WorkspacePanel* getPanelAt(const gfx::Point& pos);
 
-    Tabs* m_tabsBar;
+    WorkspacePanel m_mainPanel;
+    Tabs* m_tabs;
     WorkspaceViews m_views;
-    WorkspaceView* m_activeView;
-    int m_dropArea;
-    int m_leftTime, m_rightTime;
-    int m_topTime, m_bottomTime;
+    WorkspacePanel* m_activePanel;
+    WorkspacePanel* m_dropPreviewPanel;
   };
 
 } // namespace app
