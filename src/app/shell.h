@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2001-2016  David Capello
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -9,7 +9,7 @@
 #define APP_SHELL_H_INCLUDED
 #pragma once
 
-namespace scripting {
+namespace script {
   class Engine;
 }
 
@@ -20,7 +20,7 @@ namespace app {
     Shell();
     ~Shell();
 
-    void run(scripting::Engine& engine);
+    void run(script::Engine& engine);
   };
 
 } // namespace app
