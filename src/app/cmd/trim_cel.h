@@ -10,16 +10,15 @@
 #pragma once
 
 #include "app/cmd.h"
-#include "app/cmd/remove_cel.h"
-#include "app/cmd/with_cel.h"
-#include "doc/color.h"
-#include "gfx/rect.h"
+
+namespace doc {
+  class Cel;
+}
 
 namespace app {
 namespace cmd {
 
-  class TrimCel : public Cmd
-                , public WithCel {
+  class TrimCel : public Cmd {
   public:
     TrimCel(doc::Cel* cel);
 
@@ -28,17 +27,11 @@ namespace cmd {
     void onUndo() override;
     void onRedo() override;
     size_t onMemSize() const override {
-      return sizeof(*this) +
-        (m_removeCel ? m_removeCel->memSize() : 0);
+      return sizeof(*this) + m_subCmd->memSize();
     }
 
   private:
-    void cropImage(const gfx::Rect& bounds);
-
-    gfx::Rect m_bounds;
-    gfx::Rect m_originalBounds;
-    doc::color_t m_color;
-    RemoveCel* m_removeCel;
+    Cmd* m_subCmd;
   };
 
 } // namespace cmd
