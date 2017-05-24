@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -23,7 +23,7 @@ Hsv::Hsv(double hue, double saturation, double value)
 {
   while (m_hue < 0.0)
     m_hue += 360.0;
-  m_hue = fmod(hue, 360.0);
+  m_hue = std::fmod(m_hue, 360.0);
 
   assert(hue        >= 0.0 && hue        <= 360.0);
   assert(saturation >= 0.0 && saturation <= 1.0);
@@ -58,7 +58,7 @@ Hsv::Hsv(const Rgb& rgb)
 
       while (hue_prime < 0.0)
         hue_prime += 6.0;
-      hue_prime = fmod(hue_prime, 6.0);
+      hue_prime = std::fmod(hue_prime, 6.0);
     }
     else if (M == rgb.green()) {
       hue_prime = ((b - r) / chroma) + 2.0;

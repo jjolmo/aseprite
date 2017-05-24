@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,8 +14,7 @@ namespace gfx {
 
 class Rgb;
 
-class Hsv
-{
+class Hsv {
 public:
   Hsv()
     : m_hue(0.0)
@@ -35,19 +34,13 @@ public:
   explicit Hsv(const Rgb& rgb);
 
   // Returns color's hue, a value from 0 to 360
-  double hue() const {
-    return m_hue;
-  }
+  double hue() const { return m_hue; }
 
   // Returns color's saturation, a value from 0 to 100
-  double saturation() const {
-    return m_saturation;
-  }
+  double saturation() const { return m_saturation; }
 
   // Returns color's brightness, a value from 0 to 100
-  double value() const {
-    return m_value;
-  }
+  double value() const { return m_value; }
 
   // Integer getters, hue=[0,360), saturation=[0,100], value=[0,100]
   int hueInt() const;
