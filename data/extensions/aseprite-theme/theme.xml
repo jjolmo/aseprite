@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <theme name="Default" screenscaling="2" uiscaling="1">
     <authors>
-        <author name="David Capello" url="http://davidcapello.com/" />
-        <author name="Ilija Melentijevic" url="http://ilkke.blogspot.com/" />
+        <author name="David Capello" url="https://davidcapello.com/" />
+        <author name="Ilija Melentijevic" url="https://ilkke.net/" />
     </authors>
     <fonts>
         <font id="default" font="Aseprite" />
@@ -971,15 +971,15 @@
             <icon part="aseprite_face_pushed" state="mouse selected" />
         </style>
         <style id="slider" border-top="4" border-bottom="5">
-          <background part="slider_empty" />
-          <background part="slider_empty_focused" state="focus" />
-          <text color="slider_empty_text" align="center middle" />
-          <text color="slider_empty_text" align="center middle" state="focus" y="1" />
+            <background part="slider_empty" />
+            <background part="slider_empty_focused" state="focus" />
+            <text color="slider_empty_text" align="center middle" />
+            <text color="slider_empty_text" align="center middle" state="focus" y="1" />
         </style>
         <style id="mini_slider" extends="slider" font="mini" padding-top="1" padding-bottom="3">
-          <background part="mini_slider_empty" />
-          <text color="slider_empty_text" align="center middle" />
-          <text color="slider_empty_text" align="center middle" state="focus" />
+            <background part="mini_slider_empty" />
+            <text color="slider_empty_text" align="center middle" />
+            <text color="slider_empty_text" align="center middle" state="focus" />
         </style>
     </styles>
 </theme>
