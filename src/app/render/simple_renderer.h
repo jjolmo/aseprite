@@ -44,7 +44,7 @@ namespace app {
     void renderSprite(doc::Image* dstImage,
                       const doc::Sprite* sprite,
                       const doc::frame_t frame) override;
-    void renderSprite(doc::Image* dstImage,
+    void renderSprite(os::Surface* dstSurface,
                       const doc::Sprite* sprite,
                       const doc::frame_t frame,
                       const gfx::ClipF& area) override;
