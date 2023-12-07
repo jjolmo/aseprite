@@ -9,133 +9,17 @@
 #define DOC_SELECTED_FRAMES_H_INCLUDED
 #pragma once
 
-#include "doc/frame_range.h"
+#include "doc/frames_iterators.h"
 
-#include <iosfwd>
-#include <vector>
+using namespace doc::frames;
 
 namespace doc {
 
+  // The FramesSequence class is based in several code of this class.
+  // TODO: At some point we should remove the duplicated code between these
+  // classes.
   class SelectedFrames {
-    typedef std::vector<FrameRange> Ranges;
-
   public:
-    class const_iterator {
-      static const int kNullFrame = -2;
-    public:
-      using iterator_category = std::forward_iterator_tag;
-      using value_type = frame_t;
-      using difference_type = std::ptrdiff_t;
-      using pointer = frame_t*;
-      using reference = frame_t&;
-
-      const_iterator(const Ranges::const_iterator& it)
-        : m_it(it), m_frame(kNullFrame) {
-      }
-
-      const_iterator& operator++() {
-        if (m_frame == kNullFrame)
-          m_frame = m_it->fromFrame;
-
-        if (m_it->fromFrame <= m_it->toFrame) {
-          if (m_frame < m_it->toFrame)
-            ++m_frame;
-          else {
-            m_frame = kNullFrame;
-            ++m_it;
-          }
-        }
-        else {
-          if (m_frame > m_it->toFrame)
-            --m_frame;
-          else {
-            m_frame = kNullFrame;
-            ++m_it;
-          }
-        }
-
-        return *this;
-      }
-
-      frame_t operator*() const {
-        if (m_frame == kNullFrame)
-          m_frame = m_it->fromFrame;
-        return m_frame;
-      }
-
-      bool operator==(const const_iterator& o) const {
-        return (m_it == o.m_it && m_frame == o.m_frame);
-      }
-
-      bool operator!=(const const_iterator& it) const {
-        return !operator==(it);
-      }
-
-    private:
-      mutable Ranges::const_iterator m_it;
-      mutable frame_t m_frame;
-    };
-
-    class const_reverse_iterator {
-    public:
-      using iterator_category = std::forward_iterator_tag;
-      using value_type = frame_t;
-      using difference_type = std::ptrdiff_t;
-      using pointer = frame_t*;
-      using reference = frame_t&;
-
-      const_reverse_iterator(const Ranges::const_reverse_iterator& it)
-        : m_it(it), m_frame(-1) {
-      }
-
-      const_reverse_iterator& operator++() {
-        if (m_frame < 0)
-          m_frame = m_it->toFrame;
-
-        if (m_frame > m_it->fromFrame)
-          --m_frame;
-        else {
-          m_frame = -1;
-          ++m_it;
-        }
-
-        return *this;
-      }
-
-      frame_t operator*() const {
-        if (m_frame < 0)
-          m_frame = m_it->toFrame;
-        return m_frame;
-      }
-
-      bool operator==(const const_reverse_iterator& o) const {
-        return (m_it == o.m_it && m_frame == o.m_frame);
-      }
-
-      bool operator!=(const const_reverse_iterator& it) const {
-        return !operator==(it);
-      }
-
-    private:
-      mutable Ranges::const_reverse_iterator m_it;
-      mutable frame_t m_frame;
-    };
-
-    class Reversed {
-    public:
-      typedef const_reverse_iterator const_iterator;
-
-      const_iterator begin() const { return m_selectedFrames.rbegin(); }
-      const_iterator end() const { return m_selectedFrames.rend(); }
-
-      Reversed(const SelectedFrames& selectedFrames)
-        : m_selectedFrames(selectedFrames) {
-      }
-
-    private:
-      const SelectedFrames& m_selectedFrames;
-    };
-
     const_iterator begin() const { return const_iterator(m_ranges.begin()); }
     const_iterator end() const { return const_iterator(m_ranges.end()); }
     const_reverse_iterator rbegin() const { return const_reverse_iterator(m_ranges.rbegin()); }
@@ -156,7 +40,7 @@ namespace doc {
     frame_t lastFrame() const { return (!m_ranges.empty() ? m_ranges.back().toFrame: -1); }
 
     void displace(frame_t frameDelta);
-    Reversed reversed() const { return Reversed(*this); }
+    Reversed<SelectedFrames> reversed() const { return Reversed(*this); }
 
     SelectedFrames makeReverse() const;
     SelectedFrames makePingPong() const;
