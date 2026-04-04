@@ -461,12 +461,19 @@ void Manager::generateMessagesFromOSEvents()
         break;
       }
 
-      case os::Event::WindowLeave:
+      case os::Event::AppLeave:
+        // Release capture only when focus leaves the application
+        // entirely (e.g. Alt+Tab to another app). We don't release
+        // on WindowLeave because on XWayland the compositor can
+        // send spurious FocusOut events that would prematurely
+        // release capture and close popup windows (e.g. the color
+        // picker popup).
         if (capture_widget) {
-          const gfx::Point mousePos = display->nativeWindow()->pointFromScreen(
+          Display* captureDisplay = capture_widget->display();
+          const gfx::Point mousePos = captureDisplay->nativeWindow()->pointFromScreen(
             get_mouse_position());
           auto* msg = newMouseMessage(kMouseUpMessage,
-                                      display,
+                                      captureDisplay,
                                       nullptr,
                                       mousePos,
                                       PointerType::Unknown,
