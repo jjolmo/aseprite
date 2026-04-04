@@ -2,18 +2,11 @@
 #
 # apply-xwayland-fixes.sh
 #
-# Applies XWayland crash/popup fixes on top of official Aseprite master.
-# Run this from the root of a clean aseprite clone (with submodules initialized).
+# Clona, parchea y compila Aseprite con los fixes de XWayland.
+# Pensado para ejecutarse en un Ubuntu/Debian limpio.
 #
-# Usage:
-#   git clone --recursive https://github.com/aseprite/aseprite.git
-#   cd aseprite
-#   ./apply-xwayland-fixes.sh
-#
-# What it does:
-#   1. Fetches the fix branches from jjolmo's forks
-#   2. Cherry-picks the fix commits onto current HEAD
-#   3. Updates the laf submodule to include the XWayland fix
+# Uso:
+#   curl -sL https://raw.githubusercontent.com/jjolmo/aseprite/jjolmo/crash-selecting-color-xwayland/apply-xwayland-fixes.sh | bash
 #
 
 set -euo pipefail
@@ -27,45 +20,37 @@ info()  { echo -e "${GREEN}[INFO]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 
-# --- Validate we're in an aseprite repo ---
-if [[ ! -f "src/app/app.h" ]]; then
-    error "This doesn't look like the aseprite repo root. Run this script from the aseprite directory."
-fi
+INSTALL_DIR="$HOME/aseprite"
 
-# --- Step 1: Apply laf submodule fix ---
-info "Applying XWayland fix to laf submodule..."
+# --- Step 1: Install dependencies ---
+info "Installing build dependencies..."
+sudo apt-get update -qq
+sudo apt-get install -y g++ clang cmake ninja-build libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev libfontconfig1-dev git curl unzip
 
-cd laf
-
-# Add jjolmo's fork as a temporary remote
-if ! git remote | grep -q '^jjolmo$'; then
-    git remote add jjolmo https://github.com/jjolmo/laf.git
-fi
-git fetch jjolmo xwayland-fixes
-
-# Cherry-pick the laf fix
-LAF_COMMIT="8f1575bedfb4564075ed5b19857e6a402f0b107e"
-if git log --oneline | head -20 | grep -q "${LAF_COMMIT:0:10}"; then
-    warn "laf fix already applied, skipping."
+# --- Step 2: Clone aseprite ---
+if [[ -d "$INSTALL_DIR/.git" ]]; then
+    info "Aseprite already cloned in $INSTALL_DIR, updating..."
+    cd "$INSTALL_DIR"
+    git fetch origin
+    git checkout main
+    git pull origin main
+    git submodule update --init --recursive
 else
-    git cherry-pick "$LAF_COMMIT" --no-edit || {
-        error "Cherry-pick failed in laf. Resolve conflicts manually, then run: git cherry-pick --continue"
-    }
-    info "laf fix applied successfully."
+    info "Cloning Aseprite..."
+    git clone --recursive https://github.com/aseprite/aseprite.git "$INSTALL_DIR"
+    cd "$INSTALL_DIR"
 fi
 
-cd ..
+# --- Step 3: Apply XWayland fixes ---
+info "Applying XWayland fixes..."
 
-# --- Step 2: Apply aseprite fixes ---
-info "Applying aseprite fixes..."
-
-# Add jjolmo's fork as a temporary remote
+# Add jjolmo fork remotes
 if ! git remote | grep -q '^jjolmo$'; then
     git remote add jjolmo https://github.com/jjolmo/aseprite.git
 fi
 git fetch jjolmo jjolmo/crash-selecting-color-xwayland
 
-# Cherry-pick the aseprite commits (in order: oldest first)
+# Cherry-pick aseprite commits (oldest first)
 ASEPRITE_COMMITS=(
     "2a80e0121a6e1556559421f13cd0fcf076a67458"  # Release mouse capture only on AppLeave, not WindowLeave
     "1c516a23994fbe1b7f9871e0f680a521b9bc0dae"  # Don't close pinnable popups on mouse move outside hot region
@@ -73,30 +58,52 @@ ASEPRITE_COMMITS=(
 
 for commit in "${ASEPRITE_COMMITS[@]}"; do
     short="${commit:0:10}"
-    if git log --oneline | head -20 | grep -q "$short"; then
+    if git log --oneline -20 | grep -q "$short"; then
         warn "Commit $short already applied, skipping."
     else
         git cherry-pick "$commit" --no-edit || {
-            error "Cherry-pick failed for $commit. Resolve conflicts manually, then run: git cherry-pick --continue"
+            error "Cherry-pick failed for $commit. Resolve conflicts manually."
         }
         msg=$(git log -1 --format="%s" "$commit")
         info "Applied: $msg"
     fi
 done
 
-# --- Step 3: Stage the laf submodule update ---
-info "Staging laf submodule pointer update..."
+# Apply laf submodule fix
+info "Applying laf submodule fix..."
+cd laf
+if ! git remote | grep -q '^jjolmo$'; then
+    git remote add jjolmo https://github.com/jjolmo/laf.git
+fi
+git fetch jjolmo xwayland-fixes
+
+LAF_COMMIT="8f1575bedfb4564075ed5b19857e6a402f0b107e"
+if git log --oneline -20 | grep -q "${LAF_COMMIT:0:10}"; then
+    warn "laf fix already applied, skipping."
+else
+    git cherry-pick "$LAF_COMMIT" --no-edit || {
+        error "Cherry-pick failed in laf."
+    }
+    info "Applied: Fix crash when picking colors outside screen bounds on XWayland"
+fi
+cd ..
+
 git add laf
-git commit -m "Update laf submodule with XWayland fix" --no-edit 2>/dev/null || {
-    warn "No submodule change to commit (may already be up to date)."
-}
+git commit -m "Update laf submodule with XWayland fix" --no-edit 2>/dev/null || true
+
+# --- Step 4: Build with the official build.sh ---
+info "Building Aseprite (this will download Skia and compile)..."
+bash build.sh --auto --norun
 
 # --- Done ---
 echo ""
-info "All XWayland fixes applied successfully!"
-info "Commits applied:"
-info "  - [laf] Fix crash when picking colors outside screen bounds on XWayland"
-info "  - Release mouse capture only on AppLeave, not WindowLeave"
-info "  - Don't close pinnable popups on mouse move outside hot region"
-echo ""
-info "You can now build aseprite normally."
+info "============================================"
+info "  Aseprite compiled successfully!"
+info "============================================"
+info ""
+info "  Binary: $INSTALL_DIR/build/release/bin/aseprite"
+info ""
+info "  To run:  $INSTALL_DIR/build/release/bin/aseprite"
+info ""
+info "  To update later, just run this script again."
+info "============================================"
