@@ -62,6 +62,15 @@ bool PopupWindowPin::onProcessMessage(Message* msg)
         m_pinned = false;
       break;
     }
+
+    // Don't close this popup when the mouse moves outside the hot
+    // region. This kind of popup (color picker, etc.) should only
+    // close on explicit actions: clicking outside, pressing
+    // Escape/Enter, or closing via the close button.
+    case kMouseMoveMessage:
+      if (!m_pinned)
+        return Window::onProcessMessage(msg);
+      break;
   }
 
   return PopupWindow::onProcessMessage(msg);
