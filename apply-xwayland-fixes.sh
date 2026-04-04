@@ -19,8 +19,7 @@ info()  { echo -e "${GREEN}[OK]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[SKIP]${NC} $*"; }
 error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 
-ASEPRITE_DIR="$HOME/aseprite"
-cd "$ASEPRITE_DIR" || error "No se encontró $ASEPRITE_DIR"
+[[ -f "src/app/app.h" ]] || error "Ejecuta este script desde la carpeta de aseprite"
 
 # --- Update main ---
 info "Actualizando a último main..."
@@ -68,4 +67,4 @@ git add laf
 git commit -m "Update laf submodule with XWayland fix" --no-edit 2>/dev/null || true
 
 echo ""
-info "Parches aplicados. Ahora recompila con: cd $ASEPRITE_DIR && bash build.sh --auto --norun"
+info "Parches aplicados. Ahora recompila con: bash build.sh --auto --norun"
